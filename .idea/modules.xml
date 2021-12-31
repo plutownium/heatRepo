@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../LeParisienScraper/.idea/LeParisienScraper.iml" filepath="$PROJECT_DIR$/../LeParisienScraper/.idea/LeParisienScraper.iml" />
+      <module fileurl="file://$USER_HOME$/Documents/Code2022/devil/.idea/devil.iml" filepath="$USER_HOME$/Documents/Code2022/devil/.idea/devil.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../devilArbitrage/.idea/devilArbitrage.iml" filepath="$PROJECT_DIR$/../devilArbitrage/.idea/devilArbitrage.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/hotJarClone.iml" filepath="$PROJECT_DIR$/.idea/hotJarClone.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../thoughtless/.idea/thoughtless.iml" filepath="$PROJECT_DIR$/../thoughtless/.idea/thoughtless.iml" />
+    </modules>
+  </component>
+</project>
