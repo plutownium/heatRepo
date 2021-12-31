@@ -13,8 +13,12 @@ urlpatterns = [
     path("/inactive", views.inactive, name="inactive"),
     path("/conversion", views.conversionEvent, name="conversionEvent"),
     # Admin routes
-    path("/admin", views.admin, name="admin")
+    path("/admin", views.admin, name="admin"),
     # ... fill in later ... get meat and potatoes first
+    # Client view routes
+    path("/", views.userView, name="userView")
+    # need: a) way to see heatmaps b) way to see user sessions' play by play (live video kinda)
+    # c) way for users to leave notes to other people like what Figma has
 ]
 
 # brainstorm:
