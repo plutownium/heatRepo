@@ -1,12 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-# import pymongo as p
 
-from "../idealRouting" import database as db
+
 
 db = None  # fixme
 
-
+session = Session(engine)
 # Note: No need to log in any users to collect userIds, just keep their ip
 
 def xyCoord(request, userId, url, xCoord, yCoord, sessionId, ):

@@ -1,10 +1,9 @@
-import pymongo as p
+import sqlalchemy as db
+# engine = db.create_engine('dialect+driver://user:pass@host:port/db')
 
-f = open("mongoConnect.txt", "r").read().split("=")[1]
+# fixme: dialect + driver user:pass
 
-db = client.test_database
-# alt db = client['test-database'] if there's a req for dict method
-
-collection = db.test_collection
-
-# db design: a user has sessions, a session has logs
+engine = db.create_engine('sqlite:///census.sqlite')
+connection = engine.connect()
+metadata = db.MetaData()
+census = db.Table('census', metadata, autoload=True, autoload_with=engine)

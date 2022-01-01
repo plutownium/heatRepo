@@ -18,6 +18,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path("sessions/", include("sessions.urls")),
-    path("polls/", include("polls.urls")),
+    # path("users/", include("users.urls")),  # maybe a second app for viewing everything?
     path('admin/', admin.site.urls),
 ]
