@@ -11,7 +11,7 @@ from random import randint
 
 engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)  # fixme
 
-# Note: No need to log in any users to collect userIds, just keep their ip
+# Note: No need to log in any users to collect user_ids, just keep their ip
 
 
 # def index(request):
@@ -34,13 +34,14 @@ engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)  #
 
 
 userData = MetaData()
-userTable = Table("userAccount", userData, Column("userId", Integer, primary_key=True))
+userTable = Table("user_account", userData, Column("user_id", Integer, primary_key=True))
+
 
 @csrf_exempt
-def createUser(request):
+def create_user(request):
     # Create a user to hold sessions.
-    userId = randint(0, 100000)
-    stmt = insert(userTable).values(userId=userId)
+    user_id = randint(0, 100000)
+    stmt = insert(userTable).values(user_id=user_id)
     with engine.connect() as conn:
         result = conn.execute(stmt)
         conn.commit()
@@ -49,22 +50,22 @@ def createUser(request):
 
 metaDataObjForSession = MetaData()
 sessionTable = Table("session", metaDataObjForSession,
-                     Column("sessionId", Integer, primary_key=True),
-                      Column("userId", Integer, ForeignKey="userAccount.userId"),
-                      Column("ip", String(30)),
-                      Column("width", Integer),
-                      Column("height", Integer))
+                     Column("session_id", Integer, primary_key=True),
+                     Column("user_id", ForeignKey("user_account.user_id")),
+                     Column("ip", String(30)),
+                     Column("width", Integer),
+                     Column("height", Integer))
 
 
 @csrf_exempt
-def startSession(request, userId, ip, width, height):
+def start_session(request, user_id, ip, width, height):
     # get URL from request body, as it will never fit in a URL argument
     print(get_client_ip(request))
     if request.method == "POST":
         url = request.body.decode("utf-8")
-        print(userId, ip, url, width, height)
-        sessionId = randint(0, 100000)
-        stmt = insert(sessionTable).values(sessionId=sessionId, ip=ip, width=width, height=height)
+        print(user_id, ip, url, width, height)
+        session_id = randint(0, 100000)
+        stmt = insert(sessionTable).values(session_id=session_id, ip=ip, width=width, height=height)
         with engine.connect() as conn:
             result = conn.execute(stmt)
             conn.commit()
@@ -75,7 +76,7 @@ def startSession(request, userId, ip, width, height):
     # log their ip to server, cookie them.
     # sessionLog = {
     #     "id": None,  # TODO: let mongodb make up the id
-    #     "user": userId,
+    #     "user": user_id,
     #     "ip": ip,
     #     "webpageURI": url,
     #     "viewportWidth": width,
@@ -86,23 +87,23 @@ def startSession(request, userId, ip, width, height):
     # return HttpResponse("ok")
 
 
-metaDataObjForXYCoord = MetaData()
-xyCoordTable = Table("xyCoordRecording", metaDataObjForXYCoord,
-                     Column("sessionId", Integer, ForeignKey("session.sessionId")),
-                      Column("userId", Integer, primary_key=True),
-                      Column("ip", String(30)),
-                      Column("xCoord", Integer),
-                      Column("yCoord", Integer))
+metadata_for_x_y_coord = MetaData()
+x_y_coord_table = Table("x_y_coord_recording", metadata_for_x_y_coord,
+                        Column("session_id", ForeignKey("session.session_id")),
+                        Column("user_id", Integer, primary_key=True),
+                        Column("ip", String(30)),
+                        Column("xCoord", Integer),
+                        Column("yCoord", Integer))
 
 
-def logXYCoord(request, userId, xCoord, yCoord):
+def log_x_y_coord(request, user_id, xCoord, yCoord):
     url = request.body.decode("utf-8")
     print(get_client_ip(request))
     if request.method == "POST":
         url = request.body.decode("utf-8")
-        print(userId, url, xCoord, yCoord)
-        sessionId = randint(0, 100000)
-        stmt = insert(sessionTable).values(userId=userId, xCoord=width, height=height)
+        print(user_id, url, xCoord, yCoord)
+        session_id = randint(0, 100000)
+        stmt = insert(sessionTable).values(user_id=user_id, xCoord=xCoord, yCoord=yCoord)
         with engine.connect() as conn:
             result = conn.execute(stmt)
             conn.commit()
@@ -110,13 +111,13 @@ def logXYCoord(request, userId, xCoord, yCoord):
     else:
         return HttpResponse("wrong request method")
     # # log x and y to session document
-    # # locationLog = {"user": userId,
+    # # locationLog = {"user": user_id,
     # #                "webpageURI": url,
     # #                "location": [xCoord, yCoord],
-    # #                "sessionId": sessionId,
+    # #                "session_id": session_id,
     # #                }
     # stmtLocationLog = (
-    #     insert(eventLog).values(user=userId, webpageURI=url, location=[xCoord, yCoord], sessionId=sessionId)
+    #     insert(eventLog).values(user=user_id, webpageURI=url, location=[xCoord, yCoord], session_id=session_id)
     # )
     # logs = db.eventLogs
     # post_id = logs.insert_one(locationLog).inserted_id
@@ -124,85 +125,125 @@ def logXYCoord(request, userId, xCoord, yCoord):
     # return HttpResponse("hey, {}, {}".format(xCoord, yCoord))
 
 
-metaDataObjForScrollEvent = MetaData()
-scrollEventTable = Table("scrollEvent", metaDataObjForScrollEvent,
-                     Column("sessionId", Integer, ForeignKey="session.sessionId"),
-                      Column("userId", Integer, primary_key=True),
-                      Column("ip", String(30)),
-                      Column("location", Integer))
+metadata_for_scroll_event = MetaData()
+scroll_event_table = Table("scroll_event", metadata_for_scroll_event,
+                           Column("session_id", ForeignKey("session.session_id")),
+                           Column("user_id", Integer, primary_key=True),
+                           Column("ip", String(30)),
+                           Column("location", Integer))
 
 
-def scrollEvent(request, userId, location):
-    scrollLog = {"userId": userId, "location": location}
-    logs = db.eventLogs
-    scrollEventId = logs.insert_one(scrollLog).inserted_id
-    return HttpResponse("ok")
+def scroll_event(request, user_id, location):
+    if request.method == "POST":
+        url = request.body.decode("utf-8")
+        print(user_id, url, location)
+        stmt = insert(sessionTable).values(user_id=user_id, location=location)
+        with engine.connect() as conn:
+            result = conn.execute(stmt)
+            conn.commit()
+        return HttpResponse("Posted! {}".format(result.inserted_primary_key))
+    else:
+        return HttpResponse("wrong request method")
+    # scrollLog = {"user_id": user_id, "location": location}
+    # logs = db.eventLogs
+    # scrollEventId = logs.insert_one(scrollLog).inserted_id
+    # return HttpResponse("ok")
 
 
-metaDataForCaptureTouch = MetaData()
-captureTouchTable = Table("captureTouch", metaDataForCaptureTouch,
-                          Column("sessionId", Integer, ForeignKey="session.sessionId"),
-                          Column("userId", Integer, primary_key=True),
-                          Column("location", Integer))
+metadata_for_capture_touch = MetaData()
+capture_touch_table = Table("capture_touch", metadata_for_capture_touch,
+                            Column("session_id", ForeignKey("session.session_id")),
+                            Column("user_id", Integer, primary_key=True),
+                            Column("location", Integer))
 
 
-def captureTouch(request, userId, location):
-    touchLog = {
-        "userId": userId, "touchLocation": location}
-    logs = db.eventLogs
-    touchEventId = logs.insert_one(touchLog).inserted_id
-    return HttpResponse("ok")
+def capture_touch(request, user_id, location):
+    if request.method == "POST":
+        url = request.body.decode("utf-8")
+        print(user_id, url, location)
+        stmt = insert(sessionTable).values(user_id=user_id, location=location)
+        with engine.connect() as conn:
+            result = conn.execute(stmt)
+            conn.commit()
+        return HttpResponse("Posted! {}".format(result.inserted_primary_key))
+    else:
+        return HttpResponse("wrong request method")
+    # touchLog = {
+    #     "user_id": user_id, "touchLocation": location}
+    # logs = db.eventLogs
+    # touchEventId = logs.insert_one(touchLog).inserted_id
+    # return HttpResponse("ok")
 
 
 metaDataForLogScreenDimensions = MetaData()
-screenDimensionsTable = Table("screenDimensionsLog", metaDataForLogScreenDimensions,
-                          Column("sessionId", Integer, ForeignKey="session.sessionId"),
-                          Column("userId", Integer, primary_key=True),
-                          Column("height", Integer),
-                          Column("width", Integer))
+screenDimensionsTable = Table("screen_dimensions_log", metaDataForLogScreenDimensions,
+                              Column("session_id", ForeignKey("session.session_id")),
+                              Column("user_id", Integer, primary_key=True),
+                              Column("height", Integer),
+                              Column("width", Integer))
 
-# xyCoord, scrollEvent, captureTouch, screenHeightWidth, inactive, conversionEvent
-def logScreenHeightWidth(request, userId, height, width):
-    heightWidthLog = {
-        "userId": userId, "height": height, "width": width}
-    logs = db.eventLogs
-    touchEventId = logs.insert_one(heightWidthLog).inserted_id
-    return HttpResponse("ok")
+
+def log_screen_height_width(request, user_id, height, width):
+    if request.method == "POST":
+        url = request.body.decode("utf-8")
+        print(user_id, url, height, width)
+        stmt = insert(sessionTable).values(user_id=user_id, height=height, width=width)
+        with engine.connect() as conn:
+            result = conn.execute(stmt)
+            conn.commit()
+        return HttpResponse("Posted! {}".format(result.inserted_primary_key))
+    else:
+        return HttpResponse("wrong request method")
+    # heightWidthLog = {
+    #     "user_id": user_id, "height": height, "width": width}
+    # logs = db.eventLogs
+    # touchEventId = logs.insert_one(heightWidthLog).inserted_id
+    # return HttpResponse("ok")
 
 
 metaDataForInactiveSession = MetaData()
-inactiveSessionTable = Table("inactiveSession", metaDataForLogScreenDimensions,
-                          Column("sessionId", Integer, ForeignKey=("session.sessionId")),
-                          Column("userId", Integer, primary_key=True),
+inactiveSessionTable = Table("inactive_session", metaDataForLogScreenDimensions,
+                          Column("session_id", ForeignKey("session.session_id")),
+                          Column("user_id", Integer, primary_key=True),
                           Column("height", Integer),
                           Column("width", Integer))
 
 
-def inactiveSession(request, userId, inactiveAt):
+def inactive_session(request, user_id, inactive_at):
     """
     :param request:
-    :param userId:
-    :param inactiveAt: the time from that ms since UTC epoch format
+    :param user_id:
+    :param inactive_at: the time from that ms since UTC epoch format
     :return:
     """
     # log what time they went inactive
-    inactivityLog = {
-        "userId": userId, "inactiveAt": inactiveAt}
-    logs = db.eventLogs
-    touchEventId = logs.insert_one(inactivityLog).inserted_id
-    return HttpResponse("ok")
+    if request.method == "POST":
+        url = request.body.decode("utf-8")
+        print(user_id, url, inactive_at)
+        stmt = insert(sessionTable).values(user_id=user_id, inactive_at=inactive_at)
+        with engine.connect() as conn:
+            result = conn.execute(stmt)
+            conn.commit()
+        return HttpResponse("Posted! {}".format(result.inserted_primary_key))
+    else:
+        return HttpResponse("wrong request method")
+    # inactivityLog = {
+    #     "user_id": user_id, "inactive_at": inactive_at}
+    # logs = db.eventLogs
+    # touchEventId = logs.insert_one(inactivityLog).inserted_id
+    # return HttpResponse("ok")
 
 
 metaDataForConversionEvent = MetaData()
 conversionEventTable = Table("conversionEvent", metaDataForConversionEvent,
-                             Column("sessionId", Integer, ForeignKey=("session.sessionId")),
-                             Column("conversionId", Integer))
+                             Column("session_id", ForeignKey("session.session_id")),
+                             Column("conversion_id", Integer))
 
 
-def logConversionEvent(request, userId, conversionId):
+def logConversionEvent(request, user_id, conversion_id):
     # log it to the server
     conversion = {
-        "userId": userId, "conversionId": conversionId}
+        "user_id": user_id, "conversionId": conversionId}
     logs = db.eventLogs
     touchEventId = logs.insert_one(conversion).inserted_id
     return HttpResponse(touchEventId)
