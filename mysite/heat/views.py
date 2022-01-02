@@ -7,6 +7,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy import MetaData, ForeignKey
 from sqlalchemy import Table, Column, Integer, String
 
+from random import randint
+
 engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)  # fixme
 
 # Note: No need to log in any users to collect userIds, just keep their ip
@@ -37,7 +39,12 @@ userTable = Table("userAccount", userData, Column("userId", Integer, primary_key
 @csrf_exempt
 def createUser(request):
     # Create a user to hold sessions.
-    return HttpResponse("user created!")
+    userId = randint(0, 100000)
+    stmt = insert(userTable).values(userId=userId)
+    with engine.connect() as conn:
+        result = conn.execute(stmt)
+        conn.commit()
+    return HttpResponse("user created! {}".format(result.inserted_primary_key))
 
 
 metaDataObjForSession = MetaData()
@@ -56,12 +63,14 @@ def startSession(request, userId, ip, width, height):
     if request.method == "POST":
         url = request.body.decode("utf-8")
         print(userId, ip, url, width, height)
-        return HttpResponse("Posted!")
-    elif request.method == "GET":
-        url = request.body.decode("utf-8")
-        print(userId, ip, url, width, height, 'get')
-        return HttpResponse("Getted@")
-    return HttpResponse(request.body)
+        sessionId = randint(0, 100000)
+        stmt = insert(sessionTable).values(sessionId=sessionId, ip=ip, width=width, height=height)
+        with engine.connect() as conn:
+            result = conn.execute(stmt)
+            conn.commit()
+        return HttpResponse("Posted! {}".format(result.inserted_primary_key))
+    else:
+        return HttpResponse("wrong request method")
     # generate a unique id for the client
     # log their ip to server, cookie them.
     # sessionLog = {
@@ -82,25 +91,37 @@ xyCoordTable = Table("xyCoordRecording", metaDataObjForXYCoord,
                      Column("sessionId", Integer, ForeignKey("session.sessionId")),
                       Column("userId", Integer, primary_key=True),
                       Column("ip", String(30)),
-                      Column("width", Integer),
-                      Column("height", Integer))
+                      Column("xCoord", Integer),
+                      Column("yCoord", Integer))
 
 
-def logXYCoord(request, userId, xCoord, yCoord, sessionId):
+def logXYCoord(request, userId, xCoord, yCoord):
     url = request.body.decode("utf-8")
-    # log x and y to session document
-    # locationLog = {"user": userId,
-    #                "webpageURI": url,
-    #                "location": [xCoord, yCoord],
-    #                "sessionId": sessionId,
-    #                }
-    stmtLocationLog = (
-        insert(eventLog).values(user=userId, webpageURI=url, location=[xCoord, yCoord], sessionId=sessionId)
-    )
-    logs = db.eventLogs
-    post_id = logs.insert_one(locationLog).inserted_id
-    # TODO: maybe add in a feature where, the software logs also what sentence or image the mouse was over.
-    return HttpResponse("hey, {}, {}".format(xCoord, yCoord))
+    print(get_client_ip(request))
+    if request.method == "POST":
+        url = request.body.decode("utf-8")
+        print(userId, url, xCoord, yCoord)
+        sessionId = randint(0, 100000)
+        stmt = insert(sessionTable).values(userId=userId, xCoord=width, height=height)
+        with engine.connect() as conn:
+            result = conn.execute(stmt)
+            conn.commit()
+        return HttpResponse("Posted! {}".format(result.inserted_primary_key))
+    else:
+        return HttpResponse("wrong request method")
+    # # log x and y to session document
+    # # locationLog = {"user": userId,
+    # #                "webpageURI": url,
+    # #                "location": [xCoord, yCoord],
+    # #                "sessionId": sessionId,
+    # #                }
+    # stmtLocationLog = (
+    #     insert(eventLog).values(user=userId, webpageURI=url, location=[xCoord, yCoord], sessionId=sessionId)
+    # )
+    # logs = db.eventLogs
+    # post_id = logs.insert_one(locationLog).inserted_id
+    # # TODO: maybe add in a feature where, the software logs also what sentence or image the mouse was over.
+    # return HttpResponse("hey, {}, {}".format(xCoord, yCoord))
 
 
 metaDataObjForScrollEvent = MetaData()
