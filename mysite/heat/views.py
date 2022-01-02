@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from sqlalchemy import insert
 from sqlalchemy import create_engine, text
@@ -12,13 +13,13 @@ engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)  #
 
 metadata_obj = MetaData()
 
-def index(request):
-    print(16)
-    # with engine.connect() as conn:
-        # result = conn.execute(text("hello world"))
-        # print(result.all())
-        # HttpResponse(result.all())
-    return HttpResponse("ok")
+# def index(request):
+#     print(16)
+#     with engine.connect() as conn:
+#         result = conn.execute(text("hello world"))
+#         print(result)
+#         return HttpResponse(result)
+#     # return HttpResponse("ok")
 
 def index2(request):
     user_table = Table("user_data", metadata_obj, Column("id", Integer, primary_key=True),
@@ -30,6 +31,32 @@ def index2(request):
 def index3(request):
     return HttpResponse("k")
     
+
+@csrf_exempt
+def startSession(request, userId, ip, width, height):
+    # get URL from request body, as it will never fit in a URL argument
+    if request.method == "POST":
+        url = request.body.decode("utf-8")
+        print(userId, ip, url, width, height)
+        return HttpResponse("Posted!")
+    elif request.method == "GET":
+        url = request.body.decode("utf-8")
+        print(userId, ip, url, width, height, 'get')
+        return HttpResponse("Getted@")
+    return HttpResponse(request.body)
+    # generate a unique id for the client
+    # log their ip to server, cookie them.
+    # sessionLog = {
+    #     "id": None,  # TODO: let mongodb make up the id
+    #     "user": userId,
+    #     "ip": ip,
+    #     "webpageURI": url,
+    #     "viewportWidth": width,
+    #     "viewportHeight": height,
+    # }
+    # logs = db.sessionLogs
+    # post_id = logs.insert_one(sessionLog).inserted_id
+    # return HttpResponse("ok")
 
 
 def logXYCoord(request, userId, url, xCoord, yCoord, sessionId):
@@ -47,21 +74,6 @@ def logXYCoord(request, userId, url, xCoord, yCoord, sessionId):
     # TODO: maybe add in a feature where, the software logs also what sentence or image the mouse was over.
     return HttpResponse("hey, {}, {}".format(xCoord, yCoord))
 
-
-def startSession(request, userId, ip, url, width, height):
-    # generate a unique id for the client
-    # log their ip to server, cookie them.
-    sessionLog = {
-        "id": None,  # TODO: let mongodb make up the id
-        "user": userId,
-        "ip": ip,
-        "webpageURI": url,
-        "viewportWidth": width,
-        "viewportHeight": height,
-    }
-    logs = db.sessionLogs
-    post_id = logs.insert_one(sessionLog).inserted_id
-    return HttpResponse("ok")
 
 
 def scrollEvent(request, userId, location):

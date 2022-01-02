@@ -72,6 +72,8 @@ TEMPLATE_DIRS = ['C:/Users/jenfr/PycharmProjects/2022/hotJarClone/mysite/polls/t
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
+# CORS_ALLOW_CREDENTIALS = True
+
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
