@@ -6,16 +6,16 @@ from . import views
 urlpatterns = [
     # ex: /heat/index/
     # path('index/', views.index, name='index'),  # show list of all avail routes here
-    path('index2/', views.index2, name='index2'),  # show list of all avail routes here
-    path('index3/', views.index3, name='index3'),  # show list of all avail routes here
+    # path('index2/', views.index2, name='index2'),  # show list of all avail routes here
+    # path('index3/', views.index3, name='index3'),  # show list of all avail routes here
     path("startSession/<int:userId>/<str:ip>/<int:width>/<int:height>",
          views.startSession, name="startSession"),
     path("<int:xCoord>,<int:yCoord/", views.logXYCoord, name="logXYCoord"),
     path("<int:scrollEvent>/", views.scrollEvent, name="scrollEvent"),  # user scrolls mouse wheel
     path("<int:xCoord>,<int:yCoord/", views.captureTouch, name="captureTouch"),  # for tap and drag on smartphone
-    path("<int:height>,<int:width/", views.logScreenHeightWidth, name="logScreenHeightWidth"),
-    path("inactive/", views.inactiveSession, name="inactiveSession"),
-    path("conversion/", views.logConversionEvent, name="logConversionEvent"),
+    path("logScreenHeightWidth/<int:height>/<int:width/", views.logScreenHeightWidth, name="logScreenHeightWidth"),
+    path("inactive/<int:userId>/<int:inactiveAt>", views.inactiveSession, name="inactiveSession"),
+    path("conversion/<int:userId>/<int:conversionId>", views.logConversionEvent, name="logConversionEvent"),
     # Admin routes
     # path("/admin", views.admin, name="admin"),
     # ... fill in later ... get meat and potatoes first
