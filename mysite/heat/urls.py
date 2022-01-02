@@ -9,13 +9,15 @@ urlpatterns = [
     # path('index2/', views.index2, name='index2'),  # show list of all avail routes here
     # path('index3/', views.index3, name='index3'),  # show list of all avail routes here
     path("startSession/<int:userId>/<str:ip>/<int:width>/<int:height>",
-         views.startSession, name="startSession"),
-    path("<int:xCoord>,<int:yCoord/", views.logXYCoord, name="logXYCoord"),
-    path("<int:scrollEvent>/", views.scrollEvent, name="scrollEvent"),  # user scrolls mouse wheel
-    path("<int:xCoord>,<int:yCoord/", views.captureTouch, name="captureTouch"),  # for tap and drag on smartphone
-    path("logScreenHeightWidth/<int:height>/<int:width/", views.logScreenHeightWidth, name="logScreenHeightWidth"),
-    path("inactive/<int:userId>/<int:inactiveAt>", views.inactiveSession, name="inactiveSession"),
-    path("conversion/<int:userId>/<int:conversionId>", views.logConversionEvent, name="logConversionEvent"),
+         views.start_session, name="startSession"),
+    path("<int:xCoord>,<int:yCoord/", views.log_x_y_coord, name="logXYCoord"),
+    path("<int:scrollEvent>/", views.scroll_event, name="scrollEvent"),  # user scrolls mouse wheel
+    path("<int:xCoord>,<int:yCoord/", views.capture_touch, name="capture_touch"),  # for tap and drag on smartphone
+    path("log_screen_height_width/<int:height>/<int:width/",
+         views.log_screen_height_width,
+         name="log_screen_height_width"),
+    path("inactive/<int:userId>/<int:inactiveAt>", views.inactive_session, name="inactiveSession"),
+    path("conversion/<int:userId>/<int:conversionId>", views.log_conversion_event, name="logConversionEvent"),
     # Admin routes
     # path("/admin", views.admin, name="admin"),
     # ... fill in later ... get meat and potatoes first

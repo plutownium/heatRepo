@@ -183,11 +183,11 @@ screenDimensionsTable = Table("screen_dimensions_log", metaDataForLogScreenDimen
                               Column("width", Integer))
 
 
-def log_screen_height_width(request, user_id, height, width):
+def log_screen_height_width(request, height, width):
     if request.method == "POST":
         url = request.body.decode("utf-8")
-        print(user_id, url, height, width)
-        stmt = insert(sessionTable).values(user_id=user_id, height=height, width=width)
+        print(url, height, width)
+        stmt = insert(sessionTable).values(height=height, width=width)
         with engine.connect() as conn:
             result = conn.execute(stmt)
             conn.commit()
@@ -240,10 +240,10 @@ conversionEventTable = Table("conversionEvent", metaDataForConversionEvent,
                              Column("conversion_id", Integer))
 
 
-def logConversionEvent(request, user_id, conversion_id):
+def log_conversion_event(request, user_id, conversion_id):
     # log it to the server
     conversion = {
-        "user_id": user_id, "conversionId": conversionId}
+        "user_id": user_id, "conversionId": conversion_id}
     logs = db.eventLogs
     touchEventId = logs.insert_one(conversion).inserted_id
     return HttpResponse(touchEventId)
