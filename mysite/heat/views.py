@@ -1,24 +1,51 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+from sqlalchemy import insert
+from sqlalchemy import create_engine, text
+from sqlalchemy import MetaData
+from sqlalchemy import Table, Column, Integer, String
 
+engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)  # fixme
 
-db = None  # fixme
-
-session = Session(engine)
 # Note: No need to log in any users to collect userIds, just keep their ip
 
-def xyCoord(request, userId, url, xCoord, yCoord, sessionId, ):
+metadata_obj = MetaData()
+
+def index(request):
+    print(16)
+    # with engine.connect() as conn:
+        # result = conn.execute(text("hello world"))
+        # print(result.all())
+        # HttpResponse(result.all())
+    return HttpResponse("ok")
+
+def index2(request):
+    user_table = Table("user_data", metadata_obj, Column("id", Integer, primary_key=True),
+                           Column("name", String(30)),
+                           Column("fullName", String))
+    return HttpResponse(user_table.c.keys())
+
+
+def index3(request):
+    return HttpResponse("k")
+    
+
+
+def logXYCoord(request, userId, url, xCoord, yCoord, sessionId):
     # log x and y to session document
-    locationLog = {"user": userId,
-                   "webpageURI": url,
-                   "location": [xCoord, yCoord],
-                   "sessionId": sessionId,
-                   }
+    # locationLog = {"user": userId,
+    #                "webpageURI": url,
+    #                "location": [xCoord, yCoord],
+    #                "sessionId": sessionId,
+    #                }
+    stmtLocationLog = (
+        insert(eventLog).values(user=userId, webpageURI=url, location=[xCoord, yCoord], sessionId=sessionId)
+    )
     logs = db.eventLogs
     post_id = logs.insert_one(locationLog).inserted_id
     # TODO: maybe add in a feature where, the software logs also what sentence or image the mouse was over.
-    return HttpResponse("ok")
+    return HttpResponse("hey, {}, {}".format(xCoord, yCoord))
 
 
 def startSession(request, userId, ip, url, width, height):
@@ -75,6 +102,6 @@ def logConversionEvent(request, userId, conversion):
         "userId": userId, "conversion": conversion}
     logs = db.eventLogs
     touchEventId = logs.insert_one(conversion).inserted_id
-    return HttpResponse()
+    return HttpResponse(touchEventId)
 
 

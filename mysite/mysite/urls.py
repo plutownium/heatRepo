@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path("sessions/", include("sessions.urls")),
+    path("heat/", include("heat.urls")),
     # path("users/", include("users.urls")),  # maybe a second app for viewing everything?
     path('admin/', admin.site.urls),
 ]
