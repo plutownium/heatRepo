@@ -1,15 +1,21 @@
-from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from sqlalchemy import insert
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy import MetaData, ForeignKey
 from sqlalchemy import Table, Column, Integer, String
+
+from sqlalchemy.orm import sessionmaker
+
 
 from random import randint
 
 engine = create_engine("sqlite:///temp.db", echo=True, future=True)  # fixme
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
 
 # Note: No need to log in any users to collect user_ids, just keep their ip
 
@@ -37,10 +43,6 @@ def initialize(request):
     return HttpResponse("initialized")
 
 
-userData = MetaData()
-user_table = Table("user_account", userData, Column("user_id", Integer, primary_key=True))
-
-
 @csrf_exempt
 def create_user(request):
     # Create a user to hold sessions.
@@ -54,15 +56,6 @@ def create_user(request):
     return HttpResponse("user created! {}".format(result.inserted_primary_key))
 
 
-metaDataObjForSession = MetaData()
-sessionTable = Table("session", metaDataObjForSession,
-                     Column("session_id", Integer, primary_key=True),
-                     Column("user_id", ForeignKey("user_account.user_id")),
-                     Column("ip", String(30)),
-                     Column("width", Integer),
-                     Column("height", Integer))
-
-
 @csrf_exempt
 def start_session(request, user_id, ip, width, height):
     # get URL from request body, as it will never fit in a URL argument
@@ -74,6 +67,7 @@ def start_session(request, user_id, ip, width, height):
         session_id = randint(0, 100000)
         stmt = insert(sessionTable).values(session_id=session_id, ip=ip, width=width, height=height)
         with engine.connect() as conn:
+            userData.create_all(engine)  # can take this out after I export db correctly
             metaDataObjForSession.create_all(engine)
             result = conn.execute(stmt)
             conn.commit()
@@ -93,15 +87,6 @@ def start_session(request, user_id, ip, width, height):
     # logs = db.sessionLogs
     # post_id = logs.insert_one(sessionLog).inserted_id
     # return HttpResponse("ok")
-
-
-metadata_for_x_y_coord = MetaData()
-x_y_coord_table = Table("x_y_coord_recording", metadata_for_x_y_coord,
-                        Column("session_id", ForeignKey("session.session_id")),
-                        Column("user_id", Integer, primary_key=True),
-                        Column("ip", String(30)),
-                        Column("xCoord", Integer),
-                        Column("yCoord", Integer))
 
 
 def log_x_y_coord(request, user_id, xCoord, yCoord):
@@ -133,14 +118,6 @@ def log_x_y_coord(request, user_id, xCoord, yCoord):
     # return HttpResponse("hey, {}, {}".format(xCoord, yCoord))
 
 
-metadata_for_scroll_event = MetaData()
-scroll_event_table = Table("scroll_event", metadata_for_scroll_event,
-                           Column("session_id", ForeignKey("session.session_id")),
-                           Column("user_id", Integer, primary_key=True),
-                           Column("ip", String(30)),
-                           Column("location", Integer))
-
-
 def scroll_event(request, user_id, location):
     if request.method == "POST":
         url = request.body.decode("utf-8")
@@ -156,13 +133,6 @@ def scroll_event(request, user_id, location):
     # logs = db.eventLogs
     # scrollEventId = logs.insert_one(scrollLog).inserted_id
     # return HttpResponse("ok")
-
-
-metadata_for_capture_touch = MetaData()
-capture_touch_table = Table("capture_touch", metadata_for_capture_touch,
-                            Column("session_id", ForeignKey("session.session_id")),
-                            Column("user_id", Integer, primary_key=True),
-                            Column("location", Integer))
 
 
 def capture_touch(request, user_id, location):
@@ -183,14 +153,6 @@ def capture_touch(request, user_id, location):
     # return HttpResponse("ok")
 
 
-metaDataForLogScreenDimensions = MetaData()
-screenDimensionsTable = Table("screen_dimensions_log", metaDataForLogScreenDimensions,
-                              Column("session_id", ForeignKey("session.session_id")),
-                              Column("user_id", Integer, primary_key=True),
-                              Column("height", Integer),
-                              Column("width", Integer))
-
-
 def log_screen_height_width(request, height, width):
     if request.method == "POST":
         url = request.body.decode("utf-8")
@@ -207,14 +169,6 @@ def log_screen_height_width(request, height, width):
     # logs = db.eventLogs
     # touchEventId = logs.insert_one(heightWidthLog).inserted_id
     # return HttpResponse("ok")
-
-
-metaDataForInactiveSession = MetaData()
-inactiveSessionTable = Table("inactive_session", metaDataForLogScreenDimensions,
-                          Column("session_id", ForeignKey("session.session_id")),
-                          Column("user_id", Integer, primary_key=True),
-                          Column("height", Integer),
-                          Column("width", Integer))
 
 
 def inactive_session(request, user_id, inactive_at):
@@ -240,12 +194,6 @@ def inactive_session(request, user_id, inactive_at):
     # logs = db.eventLogs
     # touchEventId = logs.insert_one(inactivityLog).inserted_id
     # return HttpResponse("ok")
-
-
-metaDataForConversionEvent = MetaData()
-conversionEventTable = Table("conversionEvent", metaDataForConversionEvent,
-                             Column("session_id", ForeignKey("session.session_id")),
-                             Column("conversion_id", Integer))
 
 
 def log_conversion_event(request, user_id, conversion_id):
