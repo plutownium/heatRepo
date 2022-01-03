@@ -9,7 +9,7 @@ from sqlalchemy import Table, Column, Integer, String
 
 from random import randint
 
-engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)  # fixme
+engine = create_engine("sqlite:///temp.db", echo=True, future=True)  # fixme
 
 # Note: No need to log in any users to collect user_ids, just keep their ip
 
@@ -32,17 +32,23 @@ engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)  #
 #     return HttpResponse
 #
 
+def initialize(request):
+    # meta.create_all(engine)
+    return HttpResponse("initialized")
+
 
 userData = MetaData()
-userTable = Table("user_account", userData, Column("user_id", Integer, primary_key=True))
+user_table = Table("user_account", userData, Column("user_id", Integer, primary_key=True))
 
 
 @csrf_exempt
 def create_user(request):
     # Create a user to hold sessions.
     user_id = randint(0, 100000)
-    stmt = insert(userTable).values(user_id=user_id)
+    print(user_table)
+    stmt = insert(user_table).values(user_id=user_id)
     with engine.connect() as conn:
+        userData.create_all(engine)  # can take this out after I export db correctly
         result = conn.execute(stmt)
         conn.commit()
     return HttpResponse("user created! {}".format(result.inserted_primary_key))
@@ -62,11 +68,13 @@ def start_session(request, user_id, ip, width, height):
     # get URL from request body, as it will never fit in a URL argument
     print(get_client_ip(request))
     if request.method == "POST":
+
         url = request.body.decode("utf-8")
-        print(user_id, ip, url, width, height)
+        # print(user_id, ip, url, width, height)
         session_id = randint(0, 100000)
         stmt = insert(sessionTable).values(session_id=session_id, ip=ip, width=width, height=height)
         with engine.connect() as conn:
+            metaDataObjForSession.create_all(engine)
             result = conn.execute(stmt)
             conn.commit()
         return HttpResponse("Posted! {}".format(result.inserted_primary_key))

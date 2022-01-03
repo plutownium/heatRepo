@@ -1,2 +1,0 @@
-URI=mongodb+srv://plutownium:mongodb345@cluster0.7llne.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-

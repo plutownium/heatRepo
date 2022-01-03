@@ -7,8 +7,8 @@ urlpatterns = [
     # ex: /heat/index/
     # path('index/', views.index, name='index'),  # show list of all avail routes here
     # path('index2/', views.index2, name='index2'),  # show list of all avail routes here
-    # path('index3/', views.index3, name='index3'),  # show list of all avail routes here
-    path("startSession/<int:userId>/<str:ip>/<int:width>/<int:height>",
+    path('createUser/', views.create_user, name='create_user'),  # show list of all avail routes here
+    path("startSession/<int:user_id>/<str:ip>/<int:width>/<int:height>",
          views.start_session, name="startSession"),
     path("<int:xCoord>,<int:yCoord/", views.log_x_y_coord, name="logXYCoord"),
     path("<int:scrollEvent>/", views.scroll_event, name="scrollEvent"),  # user scrolls mouse wheel
@@ -16,8 +16,8 @@ urlpatterns = [
     path("log_screen_height_width/<int:height>/<int:width/",
          views.log_screen_height_width,
          name="log_screen_height_width"),
-    path("inactive/<int:userId>/<int:inactiveAt>", views.inactive_session, name="inactiveSession"),
-    path("conversion/<int:userId>/<int:conversionId>", views.log_conversion_event, name="logConversionEvent"),
+    path("inactive/<int:user_id>/<int:inactiveAt>", views.inactive_session, name="inactiveSession"),
+    path("conversion/<int:user_id>/<int:conversionId>", views.log_conversion_event, name="logConversionEvent"),
     # Admin routes
     # path("/admin", views.admin, name="admin"),
     # ... fill in later ... get meat and potatoes first
