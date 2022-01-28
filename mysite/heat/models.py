@@ -11,7 +11,7 @@ class Viewer(models.Model):
 class Session(models.Model):
     __tablename__ = "session"
     session_id = PositiveIntegerField(primary_key=True),
-    user_id = ForeignKey("user_account.user_id"),
+    viewer_id = ForeignKey(Viewer, on_delete=models.CASCADE)
     ip = CharField(max_length=30),
     height = IntegerField()
     width = IntegerField()
@@ -19,7 +19,7 @@ class Session(models.Model):
 
 class XYCoord(models.Model):
     __tablename__ = "xyCoords"
-    session_id = ForeignKey("session.session_id")
+    session_id = ForeignKey(Session, on_delete=models.CASCADE)
     user_id = PositiveIntegerField(primary_key=True)
     ip = CharField(max_length=30)
     x = IntegerField()
@@ -28,7 +28,7 @@ class XYCoord(models.Model):
 
 class ScrollEvent(models.Model):
     __tablename__ = "scroll_event"
-    session_id = ForeignKey("session.session_id")
+    session_id = ForeignKey(Session, on_delete=models.CASCADE)
     user_id = PositiveIntegerField(primary_key=True)
     ip = CharField(max_length=30)
     location = IntegerField()
@@ -36,14 +36,14 @@ class ScrollEvent(models.Model):
 
 class CaptureTouch(models.Model):
     __tablename__ = "capture_touch"
-    session_id = ForeignKey("session.session_id")
+    session_id = ForeignKey(Session, on_delete=models.CASCADE)
     user_id = PositiveIntegerField(primary_key=True)
     location = IntegerField()
 
 
 class LogScreenDimensions(models.Model):
     __tablename__ = "screen_dimensions_log"
-    session_id = ForeignKey("session.session_id")
+    session_id = ForeignKey(Session, on_delete=models.CASCADE)
     user_id = PositiveIntegerField(primary_key=True)
     height = IntegerField()
     width = IntegerField()
@@ -51,7 +51,7 @@ class LogScreenDimensions(models.Model):
 
 class InactiveSession(models.Model):
     __tablename__ = "inactive_session"
-    session_id = ForeignKey("session.session_id")
+    session_id = ForeignKey(Session, on_delete=models.CASCADE)
     user_id = PositiveIntegerField(primary_key=True)
     height = IntegerField()
     width = IntegerField()
@@ -59,6 +59,6 @@ class InactiveSession(models.Model):
 
 class ConversionEvent(models.Model):
     __tablename__ = "conversion_event"
-    session_id = ForeignKey("session.session_id")
+    session_id = ForeignKey(Session, on_delete=models.CASCADE)
     conversion_id = IntegerField()
 
